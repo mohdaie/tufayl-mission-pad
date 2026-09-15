@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tufayl's Mission Pad</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-cream: #FDFBF7; 
+      --bg-sky-light: #E0F2FE;
+      --bg-sky-dark: #BAE6FD;
+      
+      --card-trace: #EBF5FF; --btn-trace: #3B82F6; --text-trace: #1E3A8A;
+      --card-spell: #ECFDF5; --btn-spell: #10B981; --text-spell: #064E3B;
+      --card-art: #F5F3FF;   --btn-art: #A78BFA;   --text-art: #4C1D95;
+      
+      --accent-amber: #F59E0B; --accent-red: #EF4444; 
+      --text-dark: #1E293B; --text-gray: #64748B;
+      --border-color: #E2E8F0;
+      
+      /* Trace Line Colors */
+      --line-blue: #93C5FD;
+      --line-red: #FCA5A5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; font-family: 'Nunito', sans-serif; }
+    /* Allow typing in inputs */
+    input, select, textarea { user-select: auto; }
+    
+    body { 
+        background-color: var(--bg-cream); 
+        color: var(--text-dark); 
+        display: flex; 
+        flex-direction: column; 
+        height: 100vh; 
+        height: 100dvh; 
+        overflow: hidden; 
+        background-image: linear-gradient(to bottom, #F8FAFC 0%, var(--bg-cream) 100%);
+    }
+
+    header { 
+      padding: 16px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      z-index: 10; 
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+    }
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { font-size: 1.8rem; }
+    .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+    .logo-text-main { font-weight: 900; font-size: 1.2rem; color: #0F172A; }
+    .logo-text-sub { font-weight: 700; font-size: 0.65rem; color: #64748B; letter-spacing: 1px; text-transform: uppercase; }
+
+    .status-bar { display: flex; gap: 8px; align-items: center; }
+    .pill { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 9999px; font-weight: 800; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .settings-btn { background: #FFFFFF; border: none; font-size: 1.1rem; cursor: pointer; padding: 6px; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #64748B; }
+    .timer-pill { background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; }
+    .star-pill { background: #FEFCE8; color: #A16207; border: 1px solid #FEF08A; }
+
+    main { flex: 1; overflow-y: auto; padding: 10px 20px 140px 20px; display: block; }
+    .tab-content { display: none; width: 100%; max-width: 600px; margin: 0 auto; min-height: 100%; flex-direction: column; align-items: center; gap: 20px; }
+    .tab-content.active { display: flex; }
+    
+    .hero-banner {
+      width: 100%;
+      background: linear-gradient(180deg, #D4EFFC 0%, #E8F6FD 100%);
+      border-radius: 28px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 25px -10px rgba(59, 130, 246, 0.2);
+      border: 2px solid #FFFFFF;
+      margin-bottom: 10px;
+    }
+    
+    /* Decorative Clouds */
+    .hero-banner::before { content: '☁️'; position: absolute; font-size: 4rem; opacity: 0.5; top: -15px; left: -10px; filter: grayscale(100%) brightness(200%); }
+    .hero-banner::after { content: '☁️'; position: absolute; font-size: 2.5rem; opacity: 0.6; bottom: 20px; right: 45%; filter: grayscale(100%) brightness(200%); }
+    
+    .hero-left { position: relative; z-index: 2; flex: 1; }
+    
+    .hero-title-container { position: relative; display: inline-block; margin-bottom: 6px; }
+    .hero-title { font-size: 2.4rem; font-weight: 900; color: #1E293B; position: relative; z-index: 2; line-height: 1.1; letter-spacing: -1px; }
+    .hero-underline { position: absolute; bottom: 4px; left: -2%; width: 104%; height: 8px; background: #FCD34D; border-radius: 10px; transform: rotate(-2deg); z-index: 1; }
+    
+    .hero-subtitle { font-size: 1.05rem; color: #334155; font-weight: 700; margin-bottom: 12px; font-style: italic; }
+    
+    .profile-switch-btn { background: #FFFFFF; border: none; padding: 6px 12px; border-radius: 14px; font-size: 0.85rem; font-weight: 800; color: var(--btn-trace); box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.2s;}
+    .profile-switch-btn:active { transform: scale(0.95); }
+    
+    .hero-right { position: relative; width: 120px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+    .hero-avatar { font-size: 4.5rem; position: absolute; bottom: -10px; right: 20px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1)); z-index: 3; }
+    .hero-robot { font-size: 2.5rem; position: absolute; bottom: 10px; right: -10px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1)); z-index: 2; }
+    .hero-float-text { position: absolute; top: -5px; right: 0; font-family: 'Comic Sans MS', sans-serif; font-weight: bold; font-size: 0.9rem; color: #0F172A; transform: rotate(10deg); background: #FFFBEB; padding: 4px 8px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #FDE68A; }
+
+    .mission-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; width: 100%; }
+    .m-card { background: #FFF; border-radius: 24px; padding: 20px 16px; display: flex; flex-direction: column; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); position: relative; border: 2px solid transparent; transition: 0.2s; cursor: pointer; }
+    .m-card:active { transform: translateY(2px); }
+    .m-card-trace { background-color: var(--card-trace); border-bottom: 4px solid #BFDBFE;}
+    .m-card-spell { background-color: var(--card-spell); border-bottom: 4px solid #A7F3D0;}
+    .m-card-art { background-color: var(--card-art); border-bottom: 4px solid #DDD6FE;}
+    
+    .m-icon-wrapper { font-size: 3rem; margin-bottom: 12px; display: flex; justify-content: center; }
+    .m-title { font-size: 1.3rem; font-weight: 900; text-align: center; margin-bottom: 6px; }
+    .m-card-trace .m-title { color: var(--text-trace); }
+    .m-card-spell .m-title { color: var(--text-spell); }
+    .m-card-art .m-title { color: var(--text-art); }
+    
+    .m-desc { font-size: 0.9rem; text-align: center; font-weight: 700; opacity: 0.8; margin-bottom: 20px; flex: 1; }
+    .m-card-trace .m-desc { color: var(--text-trace); }
+    .m-card-spell .m-desc { color: var(--text-spell); }
+    .m-card-art .m-desc { color: var(--text-art); }
+
+    .m-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; background: rgba(255,255,255,0.6); padding: 8px; border-radius: 16px; }
+    .m-prog-pill { font-weight: 900; font-size: 0.95rem; color: #1E293B; padding-left: 8px; }
+    .m-play-btn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1.1rem; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); pointer-events: none;}
+    .m-card-trace .m-play-btn { background: var(--btn-trace); }
+    .m-card-spell .m-play-btn { background: var(--btn-spell); }
+    .m-card-art .m-play-btn { background: var(--btn-art); }
+    
+    .locked-card { opacity: 0.8; filter: grayscale(40%); }
+    .locked-card .m-play-btn { background: #94A3B8; box-shadow: none; }
+    .lock-badge { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.95); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #64748B; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+    .dashboard-card { background: #FFFFFF; border-radius: 24px; padding: 20px; width: 100%; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.03); margin-top: 10px; display: flex; border: 1px solid rgba(226, 232, 240, 0.6);}
+    
+    .streak-widget { display: flex; align-items: center; width: 100%; gap: 20px; }
+    .streak-left { display: flex; align-items: center; gap: 12px; border-right: 2px dashed #E2E8F0; padding-right: 20px; min-width: 110px;}
+    .streak-fire { font-size: 3.5rem; filter: drop-shadow(0 4px 4px rgba(245, 158, 11, 0.3)); }
+    .streak-num { font-size: 2.5rem; font-weight: 900; color: #0F172A; line-height: 1; }
+    .streak-lbl { font-size: 0.85rem; font-weight: 800; color: #64748B; }
+    
+    .streak-right { flex: 1; }
+    .streak-title { font-weight: 900; font-size: 1.1rem; margin-bottom: 12px; color: #1E293B;}
+    .week-tracker { display: flex; justify-content: space-between; align-items: center; }
+    .day-bubble { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .day-circle { width: 26px; height: 26px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: transparent; border: 2px solid transparent;}
+    .day-bubble.done .day-circle { background: #10B981; color: white; font-weight: bold; }
+    .day-bubble.today .day-circle { background: #FEF3C7; border-color: #F59E0B; }
+    .day-bubble.today .day-circle::after { content: ''; width: 10px; height: 10px; background: #F59E0B; border-radius: 50%; }
+    .day-lbl { font-size: 0.7rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;}
+
+    .motivation-banner { background: #FFF; border-radius: 20px; padding: 20px; width: 100%; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #E2E8F0; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
+    .banner-text { font-family: 'Comic Sans MS', sans-serif; font-size: 1.25rem; font-weight: bold; color: #334155; line-height: 1.3; z-index: 2; max-width: 65%; transform: rotate(-1deg); }
+    .banner-text-underline { width: 80%; height: 6px; background: #FBBF24; border-radius: 4px; margin-top: 4px; transform: rotate(-2deg); }
+    .banner-illustration { position: absolute; right: 0; bottom: -10px; font-size: 6rem; opacity: 1; z-index: 1;}
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 10px 25px 10px; box-shadow: 0 -4px 25px rgba(0,0,0,0.08); z-index: 20; border-top: 1px solid rgba(226, 232, 240, 0.6); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94A3B8; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: none; background: none; }
+    .nav-icon { font-size: 1.6rem; padding: 8px 20px; border-radius: 20px; transition: 0.2s; }
+    .nav-item.active { color: var(--btn-trace); }
+    .nav-item.active .nav-icon { background: #EFF6FF; }
+    .nav-item.locked { opacity: 0.5; }
+
+    .module-card { background: #FFFFFF; border-radius: 24px; padding: 24px; width: 100%; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; border: 1px solid #F1F5F9; }
+    .canvas-container { position: relative; width: 100%; height: 280px; background: #FFFFFF; border-radius: 16px; overflow: hidden; border: 2px dashed #CBD5E1; margin: 15px 0; }
+    
+    /* Strict z-indexing for the lines and canvas */
+    .guide-lines { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 1; pointer-events: none; display: block; padding: 0; }
+    .guide-line { position: absolute; width: 100%; height: 0; left: 0; }
+    .guide-line.sky { top: 25%; border-top: 3px solid var(--line-blue); }
+    .guide-line.plane { top: 50%; border-top: 3px dashed var(--line-blue); }
+    .guide-line.grass { top: 75%; border-top: 3px solid var(--line-red); }
+    
+    .target-ghost { position: absolute; width: 100%; height: 100%; top:0; left:0; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 140px; font-family: 'Nunito', monospace; color: rgba(203, 213, 225, 0.4); pointer-events: none; line-height: 1; font-weight: 900;}
+    
+    .start-anchor { position: absolute; z-index: 3; width: 20px; height: 20px; background: #10B981; border-radius: 50%; box-shadow: 0 0 0 5px rgba(16,185,129,0.3); pointer-events: none; animation: pulse 1.5s infinite; margin-top: -10px; margin-left: -10px; }
+    @keyframes pulse { 0% { transform: scale(0.9); } 50% { transform: scale(1.2); } 100% { transform: scale(0.9); } }
+    
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; z-index: 4; }
+
+    .accuracy-badge { display: inline-block; margin-top: 10px; padding: 10px 20px; border-radius: 16px; font-weight: 900; font-size: 1.2rem; }
+    .acc-pass { background-color: #D1FAE5; color: #065F46; box-shadow: 0 4px 10px rgba(16,185,129,0.2);}
+    .acc-fail { background-color: #FEF2F2; color: #991B1B; box-shadow: 0 4px 10px rgba(239,68,68,0.2);}
+
+    .sound-boxes { display: flex; justify-content: center; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+    .tile-slot { width: 55px; height: 68px; border: 3px dashed #CBD5E1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; background: #F8FAFC; color: #334155; }
+    .tile-slot.filled { border: 3px solid #10B981; background: #ECFDF5; color: #065F46; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); transform: scale(1.05); transition: 0.2s;}
+    
+    .options-grid { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .letter-btn { width: 55px; height: 55px; font-size: 1.5rem; font-weight: 900; border-radius: 12px; border: none; background: #F1F5F9; color: #1E293B; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.1s; }
+    .letter-btn:active { transform: translateY(2px); box-shadow: none; }
+    
+    .btn { padding: 14px 24px; font-size: 1.1rem; font-weight: 900; border-radius: 9999px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+    .btn:active { transform: scale(0.97); box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+    .btn-primary { background: var(--btn-trace); color: white; }
+    .btn-success { background: var(--btn-spell); color: white; }
+    .btn-secondary { background: #E2E8F0; color: #334155; box-shadow: none; }
+    .btn-danger { background: #FEF2F2; color: var(--accent-red); border: 2px solid #FECACA; box-shadow: none;}
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; }
+    .modal-content { background: white; padding: 28px; border-radius: 28px; width: 90%; max-width: 400px; text-align: left; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    .modal-content h3 { margin-bottom: 20px; color: #1E293B; font-size: 1.5rem; font-weight: 900;}
+    .setting-group { margin-bottom: 18px; }
+    .setting-group label { display: block; font-weight: 800; margin-bottom: 8px; font-size: 1rem; color: #334155;}
+    .setting-group input, .setting-group select { width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--border-color); font-size: 1.1rem; font-weight: 700; outline: none; background: #F8FAFC;}
+    .setting-group input:focus, .setting-group select:focus { border-color: var(--btn-trace); background: #FFF;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-area">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">
+        <span class="logo-text-main">Tufayl's Mission Pad</span>
+        <span class="logo-text-sub">Small Steps Big Progress</span>
+      </div>
+    </div>
+    <div class="status-bar">
+      <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+      <div class="pill timer-pill" id="globalTimer">⏱️ 03:00</div>
+      <div class="pill star-pill" id="starsBadge">⭐ 0 Stars</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- MODULE 0: HOME DASHBOARD -->
+    <div class="tab-content active" id="tab-dashboard">
+      
+      <!-- New Beautiful Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-left">
+          <div class="hero-title-container">
+            <h1 class="hero-title">Hey <span id="profileDisplayName">Tufayl</span>!</h1>
+            <div class="hero-underline"></div>
+          </div>
+          <p class="hero-subtitle">Ready for today's mission?</p>
+          <button class="profile-switch-btn" onclick="openProfileModal()">👤 Switch / Add (+)</button>
+        </div>
+        <div class="hero-right">
+            <div class="hero-float-text">You Can<br>Do It!</div>
+            <div class="hero-boy">🦸🏻‍♂️</div>
+            <div class="hero-robot">🤖</div>
+        </div>
+      </div>
+
+      <div class="mission-grid">
+        <!-- Trace Card -->
+        <div class="m-card m-card-trace" onclick="switchTab('reversal')">
+          <div class="m-icon-wrapper">✏️</div>
+          <div class="m-title">1. Trace</div>
+          <div class="m-desc">Build your writing muscle.</div>
+          <div class="m-footer">
+            <div class="m-prog-pill"><span id="dashCountTrace">0</span> / <span id="dashTargetTrace">10</span></div>
+            <button class="m-play-btn">➔</button>
+          </div>
+        </div>
+
+        <!-- Spell Card -->
+        <div class="m-card m-card-spell" onclick="switchTab('spelling')">
+          <div class="m-icon-wrapper">🔤</div>
+          <div class="m-title">2. Spell</div>
+          <div class="m-desc">Explore words with confidence.</div>
+          <div class="m-footer">
+            <div class="m-prog-pill"><span id="dashCountSpell">0</span> / <span id="dashTargetSpell">10</span></div>
+            <button class="m-play-btn">➔</button>
+          </div>
+        </div>
+
+        <!-- Art Card -->
+        <div class="m-card m-card-art locked-card" id="dashArtCard" onclick="switchTab('artpad')">
+          <div class="lock-badge" id="artLockIcon">🔒</div>
+          <div class="m-icon-wrapper">🎨</div>
+          <div class="m-title">3. Art Studio</div>
+          <div class="m-desc">Get creative (Unlock when targets met!)</div>
+          <div class="m-footer">
+            <div class="m-prog-pill" style="color:#A78BFA;">Reward</div>
+            <button class="m-play-btn">➔</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="streak-widget">
+          <div class="streak-left">
+            <div class="streak-fire" id="streakFire">🔥</div>
+            <div>
+              <div class="streak-num" id="streakMainText">5</div>
+              <div class="streak-lbl">Day Streak</div>
+            </div>
+          </div>
+          <div class="streak-right">
+            <div class="streak-title">Keep it going!</div>
+            <div class="week-tracker" id="weekTrackerUI">
+              <!-- Handled in JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="motivation-banner">
+        <div>
+            <div class="banner-text">Every superhero practises a little every day.</div>
+            <div class="banner-text-underline"></div>
+        </div>
+        <div class="banner-illustration">⛰️</div>
+      </div>
+
+    </div>
+
+    <!-- MODULE 1: TRACING -->
+    <div class="tab-content" id="tab-reversal">
+      <div class="module-card">
+        <h3 id="traceLabel" style="font-size: 1.6rem; color: var(--text-trace); margin-bottom: 4px; font-weight: 900;">Trace Target</h3>
+        <p style="font-size: 1rem; color: #64748B; font-weight: 700;">Start at the <b>green dot</b>. Score 50%+ to auto-advance!</p>
+        
+        <div class="canvas-container">
+          <div class="guide-lines">
+            <div class="guide-line sky"></div>
+            <div class="guide-line plane"></div>
+            <div class="guide-line grass"></div>
+          </div>
+          <div class="target-ghost" id="ghostTarget"></div>
+          <div class="start-anchor" id="startDot"></div>
+          <canvas id="traceCanvas"></canvas>
+        </div>
+        
+        <div id="accuracyResult" class="accuracy-badge" style="display:none;">Accuracy: 0%</div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; gap: 10px;">
+          <button class="btn btn-secondary" onclick="clearCanvas('traceCanvas')">Clear</button>
+          <button class="btn btn-secondary" onclick="forceNextTrace()">Skip ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 2: SPELLING -->
+    <div class="tab-content" id="tab-spelling">
+      <div class="module-card">
+        <h3 id="spellingWordLabel" style="font-size: 1.6rem; color: var(--text-spell); margin-bottom: 4px; font-weight: 900;">Spelling Mission</h3>
+        <p style="font-size: 1rem; color: #64748B; font-weight: 700;">Listen and build the word!</p>
+        
+        <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+          <div id="spellingReveal" style="display: none; font-size: 1.8rem; font-weight: 900; color: var(--text-spell); letter-spacing: 6px; padding: 10px 20px; border: 2px dashed #A7F3D0; border-radius: 12px; background: #ECFDF5;">WORD</div>
+          <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.95rem; border-radius: 10px;" onclick="revealWord()">👀 Show Word</button>
+          <button class="btn btn-primary" style="padding: 12px 24px; font-size: 1.1rem;" onclick="pronounceCurrentWord()">🔊 Hear Word Again</button>
+        </div>
+
+        <div class="sound-boxes" id="soundBoxSlots"></div>
+        <div class="options-grid" id="letterOptions"></div>
+        
+        <div style="margin-top: 24px; display: flex; justify-content: center; gap: 10px;">
+          <button class="btn btn-secondary" onclick="resetSpelling()">Reset</button>
+          <button class="btn btn-secondary" onclick="skipSpelling()">Skip ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 3: ART STUDIO -->
+    <div class="tab-content" id="tab-artpad">
+      <div class="module-card" style="height: 100%; display: flex; flex-direction: column;">
+        <h3 style="font-size: 1.6rem; color: var(--text-art); margin-bottom: 4px; font-weight: 900;">🎨 Art Studio</h3>
+        <p style="font-size: 1rem; color: #64748B; font-weight: 700;">Mission Complete! You have <span id="artTimeDisp">3</span> mins to draw.</p>
+        <div class="canvas-container" style="flex: 1; min-height: 300px; border: 3px solid var(--card-art);">
+          <canvas id="artCanvas"></canvas>
+        </div>
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; gap:10px;">
+          <button class="btn btn-secondary" onclick="clearCanvas('artCanvas')">Clear Canvas</button>
+          <button class="btn btn-success" style="flex:1;" onclick="saveArtReward()">⭐ Save & Finish</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('reversal')" id="nav-reversal">
+      <span class="nav-icon">✏️</span>
+      <span>Trace</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('spelling')" id="nav-spelling">
+      <span class="nav-icon">🔤</span>
+      <span>Spell</span>
+    </button>
+    <button class="nav-item locked" onclick="switchTab('artpad')" id="nav-artpad">
+      <span class="nav-icon">🎨</span>
+      <span>Art Pad</span>
+    </button>
+  </nav>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <h3>⚙️ Settings & Stats</h3>
+      <div class="setting-group"><label>Timer Duration (Minutes)</label><input type="number" id="setTimer" min="1" max="15"></div>
+      <div class="setting-group"><label>Letters to Trace to Unlock Art</label><input type="number" id="setTrace" min="1" max="50"></div>
+      <div class="setting-group"><label>Words to Spell to Unlock Art</label><input type="number" id="setSpell" min="1" max="50"></div>
+      
+      <div style="background: #F8FAFC; padding: 16px; border-radius: 16px; margin-top: 15px; margin-bottom: 15px; border: 1px solid #E2E8F0;">
+        <h4 style="margin-bottom: 10px; font-size: 1rem; color:#334155;">Lifetime Stats for <span id="statsProfileName"></span></h4>
+        <div style="font-size: 0.95rem; display: flex; justify-content: space-between; margin-bottom:6px; color:#475569;"><span>Letters Traced:</span><b id="lifeTrace" style="color:#1E293B;">0</b></div>
+        <div style="font-size: 0.95rem; display: flex; justify-content: space-between; margin-bottom:6px; color:#475569;"><span>Words Spelled:</span><b id="lifeSpell" style="color:#1E293B;">0</b></div>
+        <div style="font-size: 0.95rem; display: flex; justify-content: space-between; color:#475569;"><span>Art Saved:</span><b id="lifeArt" style="color:#1E293B;">0</b></div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" style="flex: 1; padding: 12px;" onclick="closeSettings()">Cancel</button>
+        <button class="btn btn-primary" style="flex: 1; padding: 12px;" onclick="saveSettings()">Save</button>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="btn btn-danger" style="flex: 1; padding: 12px; font-size: 0.95rem;" onclick="resetProfileProgress()">Reset Stats</button>
+        <button class="btn btn-danger" style="flex: 1; padding: 12px; font-size: 0.95rem;" onclick="removeProfile()">Delete User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+      <h3>🦸‍♂️ Commander Select</h3>
+      <div class="setting-group">
+        <label>Select Existing Profile</label>
+        <select id="profileSelect" onchange="switchProfile(this.value)"></select>
+      </div>
+      <div style="text-align: center; margin: 20px 0; font-weight: 900; color: #94A3B8;">— OR —</div>
+      <div class="setting-group">
+        <label>Create New Commander</label>
+        <input type="text" id="newProfileInput" placeholder="Enter name...">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-secondary" style="flex: 1;" onclick="closeProfileModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex: 1;" onclick="addNewProfileFromModal()">+ Add New</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM ALERT/CONFIRM/PROMPT MODAL -->
+  <div class="modal-overlay" id="customActionModal">
+    <div class="modal-content" style="text-align: center;">
+      <h3 id="customModalMessage" style="font-size: 1.3rem;">Message</h3>
+      <input type="text" id="customModalInput" style="display:none; width: 100%; padding: 14px; border-radius: 14px; border: 2px solid var(--border-color); font-size: 1.1rem; margin-bottom: 15px; background: #F8FAFC;" />
+      <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
+        <button class="btn btn-secondary" id="customModalCancel" style="flex: 1;">Cancel</button>
+        <button class="btn btn-primary" id="customModalConfirm" style="flex: 1;">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeCustomModal() {
+        document.getElementById('customActionModal').style.display = 'none';
+        document.getElementById('customModalInput').style.display = 'none';
+        document.getElementById('customModalCancel').style.display = 'inline-flex';
+    }
+
+    function showAlert(msg) {
+        document.getElementById('customModalMessage').innerText = msg;
+        document.getElementById('customModalCancel').style.display = 'none'; 
+        document.getElementById('customActionModal').style.display = 'flex';
+        document.getElementById('customModalConfirm').onclick = () => closeCustomModal();
+    }
+
+    function showConfirm(msg, callback) {
+        document.getElementById('customModalMessage').innerText = msg;
+        document.getElementById('customModalCancel').style.display = 'inline-flex';
+        document.getElementById('customActionModal').style.display = 'flex';
+        document.getElementById('customModalConfirm').onclick = () => { closeCustomModal(); callback(true); };
+        document.getElementById('customModalCancel').onclick = () => { closeCustomModal(); callback(false); };
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        let u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.85; 
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+    // Profiles default to Tufayl without asking
+    let savedProfiles = JSON.parse(localStorage.getItem('saved_profiles')) || ['Tufayl'];
+    let activeProfile = localStorage.getItem('active_profile');
+    
+    if (!activeProfile || !savedProfiles.includes(activeProfile)) {
+      activeProfile = 'Tufayl';
+      if (!savedProfiles.includes('Tufayl')) savedProfiles.push('Tufayl');
+      localStorage.setItem('saved_profiles', JSON.stringify(savedProfiles));
+      localStorage.setItem('active_profile', activeProfile);
+    }
+    
+    document.getElementById('profileDisplayName').innerText = activeProfile;
+    document.getElementById('statsProfileName').innerText = activeProfile;
+
+    let appSettings = JSON.parse(localStorage.getItem('app_settings')) || { timerMins: 3, traceTarget: 10, spellTarget: 10 };
+    let TARGETS = { trace: appSettings.traceTarget, spell: appSettings.spellTarget };
+    let sessionProg = { trace: 0, spell: 0 };
+    let artUnlocked = false;
+
+    const K_STARS = () => `${activeProfile}_stars`;
+    const K_STREAK = () => `${activeProfile}_streak`;
+    const K_LAST_DATE = () => `${activeProfile}_date`;
+    const K_PROG = () => `${activeProfile}_prog`;
+    const K_LIFE = () => `${activeProfile}_life`;
+
+    function openProfileModal() {
+      const selectEl = document.getElementById('profileSelect');
+      selectEl.innerHTML = savedProfiles.map(p => `<option value="${p}" ${p === activeProfile ? 'selected' : ''}>${p}</option>`).join('');
+      document.getElementById('newProfileInput').value = '';
+      document.getElementById('profileModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('newProfileInput').focus(), 100);
+    }
+
+    function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+    function switchProfile(name) {
+      if (name && name !== activeProfile) {
+        localStorage.setItem('active_profile', name);
+        location.reload();
+      }
+    }
+
+    function addNewProfileFromModal() {
+      let newName = document.getElementById('newProfileInput').value;
+      if (newName && newName.trim() !== '') {
+        newName = newName.trim();
+        if (!savedProfiles.includes(newName)) {
+          savedProfiles.push(newName);
+          localStorage.setItem('saved_profiles', JSON.stringify(savedProfiles));
+        }
+        switchProfile(newName);
+      } else {
+          showAlert("Please enter a valid name.");
+      }
+    }
+
+    let adhdTimerInterval;
+    let currentTimerPhase = 'WORK';
+
+    function startTimer(minutes) {
+      clearInterval(adhdTimerInterval);
+      let timeLeft = minutes * 60;
+      updateTimerUI(timeLeft);
+      adhdTimerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft >= 0) { 
+          updateTimerUI(timeLeft); 
+        } else {
+          clearInterval(adhdTimerInterval);
+          document.getElementById('globalTimer').innerText = "⏱️ 00:00";
+          if (currentTimerPhase === 'ART') { 
+            saveArtReward(); 
+          } else {
+            speak("Time is up for this block!");
+          }
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI(seconds) {
+      const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const sec = String(seconds % 60).padStart(2, '0');
+      document.getElementById('globalTimer').innerText = `⏱️ ${min}:${sec}`;
+    }
+
+    function openSettings() {
+      document.getElementById('setTimer').value = appSettings.timerMins;
+      document.getElementById('setTrace').value = appSettings.traceTarget;
+      document.getElementById('setSpell').value = appSettings.spellTarget;
+      
+      let life = JSON.parse(localStorage.getItem(K_LIFE()) || '{"trace":0, "spell":0, "art":0}');
+      document.getElementById('lifeTrace').innerText = life.trace;
+      document.getElementById('lifeSpell').innerText = life.spell;
+      document.getElementById('lifeArt').innerText = life.art;
+
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    function saveSettings() {
+      appSettings.timerMins = parseInt(document.getElementById('setTimer').value) || 3;
+      appSettings.traceTarget = parseInt(document.getElementById('setTrace').value) || 10;
+      appSettings.spellTarget = parseInt(document.getElementById('setSpell').value) || 10;
+      TARGETS.trace = appSettings.traceTarget; 
+      TARGETS.spell = appSettings.spellTarget;
+      localStorage.setItem('app_settings', JSON.stringify(appSettings));
+      closeSettings(); 
+      updateDashboard(); 
+      startTimer(appSettings.timerMins);
+    }
+
+    function resetProfileProgress() {
+      showConfirm(`⚠️ Reset all stats and streaks for ${activeProfile}?`, (confirmed) => {
+        if(confirmed) {
+            localStorage.removeItem(K_STARS()); 
+            localStorage.removeItem(K_STREAK()); 
+            localStorage.removeItem(K_LAST_DATE()); 
+            localStorage.removeItem(K_PROG()); 
+            localStorage.removeItem(K_LIFE());
+            sessionProg = { trace: 0, spell: 0 }; 
+            artUnlocked = false;
+            closeSettings();
+            initDashboard(); 
+        }
+      });
+    }
+
+    function removeProfile() {
+      showConfirm(`⚠️ Delete ${activeProfile} completely?`, (confirmed) => {
+        if(confirmed) {
+            localStorage.removeItem(K_STARS()); 
+            localStorage.removeItem(K_STREAK()); 
+            localStorage.removeItem(K_LAST_DATE()); 
+            localStorage.removeItem(K_PROG()); 
+            localStorage.removeItem(K_LIFE());
+            
+            savedProfiles = savedProfiles.filter(p => p !== activeProfile);
+            if (savedProfiles.length === 0) savedProfiles = ['Tufayl'];
+            localStorage.setItem('saved_profiles', JSON.stringify(savedProfiles));
+            localStorage.setItem('active_profile', savedProfiles[0]);
+            location.reload();
+        }
+      });
+    }
+
+    function updateGlobalStats() {
+      let totalStars = parseInt(localStorage.getItem(K_STARS()) || '0');
+      document.getElementById('starsBadge').innerText = `⭐ ${totalStars} Stars`;
+    }
+
+    function addStars(num) {
+      let total = parseInt(localStorage.getItem(K_STARS()) || '0') + num;
+      localStorage.setItem(K_STARS(), total);
+      updateGlobalStats();
+    }
+
+    function switchTab(tabId) {
+      if (tabId === 'artpad' && !artUnlocked) {
+        speak("Finish trace and spell missions first!"); 
+        showAlert("Unlock the Art Studio by finishing your Trace and Spell targets first! You can do it!");
+        return;
+      }
+      document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+      document.getElementById(`nav-${tabId}`).classList.add('active');
+
+      if (tabId === 'artpad' && currentTimerPhase !== 'ART') {
+        currentTimerPhase = 'ART'; 
+        startTimer(appSettings.timerMins); 
+        setupCanvas('artCanvas');
+      } else if (tabId !== 'artpad' && currentTimerPhase !== 'WORK') {
+        currentTimerPhase = 'WORK'; 
+        startTimer(appSettings.timerMins); 
+      }
+      if (tabId === 'reversal') setupCanvas('traceCanvas');
+      if (tabId === 'dashboard') updateDashboard();
+    }
+
+    // Build massive trace array programmatically
+    let revTargets = [];
+    const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+    const planeStarters = "aceimnorsuvwxz".split('');
+    
+    alphabet.forEach(char => {
+        let topPos = planeStarters.includes(char) ? '50%' : '25%';
+        revTargets.push({ char: char, left: '45%', top: topPos, snd: char });
+    });
+    for(let i=0; i<=100; i++) {
+        let str = i.toString();
+        // Adjust start dot slightly left for double digits, more for triple
+        let leftPos = str.length === 3 ? '25%' : (str.length === 2 ? '35%' : '45%');
+        revTargets.push({ char: str, left: leftPos, top: '25%', snd: str });
+    }
+    // Specific hard overrides for best starting positions
+    const traceOverrides = {
+      'a': { l: '52%' }, 'c': { l: '52%' }, 'd': { l: '52%' }, 'g': { l: '52%' }, 'q': { l: '52%' }, 'o': { l: '52%' },
+      's': { l: '52%' },
+      'b': { l: '35%' }, 'p': { l: '35%' }, 'h': { l: '35%' }, 'k': { l: '35%' }, 'l': { l: '45%' }, 't': { l: '45%' },
+      '3': { l: '40%' }, '5': { l: '40%' }, '7': { l: '35%' }, '9': { l: '52%' }
+    };
+    revTargets.forEach(t => {
+      if(traceOverrides[t.char]) { 
+        t.left = traceOverrides[t.char].l; 
+        if(traceOverrides[t.char].t) t.top = traceOverrides[t.char].t; 
+      }
+    });
+
+    // Massive list of 300+ appropriate words
+    const rawWords = ("CAT DOG PIG HAT SUN RUN BUN FUN MAP CAP MAT SAT RED BLUE PINK GOLD FISH BIRD TREE LEAF " + 
+                     "APPLE GRAPE MELON PEACH PLUM PEAR KIWI STAR MOON MARS VENUS EARTH SPACE ROCKET SHIP BOAT " + 
+                     "CAR BUS VAN TRAIN BIKE PLANE JET BIRD NEST EGG BUG ANT BEE FLY MOTH WORM TOAD FROG NEWT " + 
+                     "BEAR LION TIGER WOLF FOX DEER FAWN CUB CALF PUP KITTEN FOAL DUCK SWAN GOOSE HAWK OWL CROW " + 
+                     "DESK CHAIR TABLE BED SOFA LAMP RUG DOOR ROOF WALL ROOM HALL HOME TOWN CITY PARK YARD POOL " + 
+                     "LAKE POND SEA OCEAN GULF BAY COVE CAPE REEF SAND DIRT DUST ROCK MUD CLAY HILL MOUNTAIN PEAK " + 
+                     "VALLEY CAVE MINE PIT HOLE TRENCH CANYON WIND BREEZE GALE STORM RAIN SNOW HAIL SLEET ICE COLD " + 
+                     "HOT WARM COOL FIRE FLAME BURN ASH SMOKE WOOD LOG STICK TWIG LEAF ROOT BARK STEM SEED NUT " + 
+                     "BUSH SHRUB VINE WEED GRASS MOSS FERN PINE OAK ELM ASH MAPLE BIRCH CEDAR FIR YEW PALM CACTUS " + 
+                     "ROSE LILY DAISY TULIP IRIS ORCHID VIOLET PANSY ASTER POPPY CLOVER WHEAT CORN OATS RICE BEAN " + 
+                     "PEA YAM POTATO TOMATO ONION CARROT CELERY RADISH TURNIP BEET SQUASH PUMPKIN MELON GOURD BERRY " + 
+                     "CHERRY PLUM PEACH APPLE PEAR FIG DATE GRAPE OLIVE LEMON LIME ORANGE BANANA MANGO PAPAYA COCOA " + 
+                     "COFFEE TEA MILK JUICE WATER SODA WINE BEER MEAD SOUP STEW BROTH SAUCE GRAVY SYRUP HONEY JAM " + 
+                     "JELLY BUTTER CHEESE CREAM YOGURT BREAD ROLL BUN CAKE PIE TART COOKIE BISCUIT CRACKER CHIP " + 
+                     "NUT SEED MEAT BEEF PORK LAMB VEAL HAM BACON SAUSAGE BOLOGNA SALAMI PEPPERONI CHICKEN TURKEY " + 
+                     "DUCK GOOSE QUAIL DOVE PIGEON FISH SHARK RAY SKATE EEL CARP TROUT SALMON TUNA COD PIKE BASS " + 
+                     "PERCH CRAB SHRIMP PRAWN CLAM OYSTER MUSSEL SNAIL SLUG WORM SQUID OCTOPUS STARFISH URCHIN " + 
+                     "SPONGE CORAL JELLY TUNICATE INSECT BUG BEETLE MOTH BUTTERFLY FLY MOSQUITO GNAT FLEA LOUSE " + 
+                     "TICK MITE SPIDER SCORPION CENTIPEDE MILLIPEDE CRAB LOBSTER CRAYFISH WOODLOUSE BARNACLE " + 
+                     "WORM LEECH EARTHWORM FLATWORM ROUNDWORM HAIRWORM RIBBONWORM ARROWWORM ACORNWORM STARFISH " + 
+                     "URCHIN CUCUMBER LILY FEATHER BRITTLE STAR BASKET STAR SEA DAISY SEA LILY SEA CUCUMBER").split(' ');
+
+    let spellMissions = rawWords.map(w => {
+       let p = w.split('');
+       let o = [...p];
+       // Add 3 random distractor letters
+       while(o.length < p.length + 3) {
+          let rc = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          if(!o.includes(rc)) o.push(rc);
+       }
+       shuffleArray(o);
+       return { w: w, p: p, o: o };
+    });
+
+    let tIdx = 0;
+    function initTraceTarget() {
+      const itm = revTargets[tIdx];
+      document.getElementById('traceLabel').innerText = `Trace Target: "${itm.char}"`;
+      document.getElementById('ghostTarget').innerText = itm.char;
+      document.getElementById('startDot').style.left = itm.left; 
+      document.getElementById('startDot').style.top = itm.top;
+      document.getElementById('accuracyResult').style.display = 'none';
+      clearCanvas('traceCanvas'); 
+      speak(itm.snd);
+    }
+
+    // Called instantly when user lifts finger/mouse from canvas
+    function checkAndAdvanceTrace() {
+      const cvs = document.getElementById('traceCanvas'), ctx = cvs.getContext('2d'), w = cvs.width, h = cvs.height;
+      const osC = document.createElement('canvas'); osC.width = w; osC.height = h;
+      const osCtx = osC.getContext('2d'); 
+      osCtx.font = "140px 'Nunito', monospace"; 
+      osCtx.fontWeight = "900";
+      osCtx.textAlign = "center"; 
+      osCtx.textBaseline = "middle";
+      osCtx.fillText(revTargets[tIdx].char, w/2, h/2);
+      
+      const tData = osCtx.getImageData(0,0,w,h).data, uData = ctx.getImageData(0,0,w,h).data;
+      let tPx = 0, hPx = 0, uPx = 0;
+      
+      for(let i=3; i<tData.length; i+=4) {
+        if (tData[i] > 50) tPx++;
+        if (tData[i] > 50 && uData[i] > 50) hPx++;
+        if (uData[i] > 50) uPx++;
+      }
+      
+      let acc = tPx === 0 ? 0 : Math.round((hPx / tPx) * 100);
+      if (uPx > tPx * 2.5) acc = Math.round(acc * 0.6); // Strict check against scribbles
+      
+      const res = document.getElementById('accuracyResult');
+      res.style.display = 'inline-block'; 
+      
+      // Auto-complete threshold is 50%
+      if (acc >= 50) {
+        res.innerText = `Accuracy: ${acc}% 😀`;
+        res.className = 'accuracy-badge acc-pass'; 
+        speak("Great trace!");
+        sessionProg.trace++; 
+        updateLifetimeProg('trace'); 
+        addStars(1);
+        checkUnlocks();
+        setTimeout(() => { forceNextTrace(); }, 1200); // Auto advance
+      } else {
+        // Less than 50% shows motivation and lets them keep tracing
+        res.innerText = `Accuracy: ${acc}% 💪`;
+        res.className = 'accuracy-badge acc-fail'; 
+      }
+    }
+
+    function forceNextTrace() { 
+      tIdx = (tIdx + 1) % revTargets.length; 
+      initTraceTarget(); 
+    }
+
+    let sIdx = 0, slotProg = 0;
+    function initSpellingMission() {
+      const m = spellMissions[sIdx]; 
+      slotProg = 0;
+      document.getElementById('spellingReveal').style.display = 'none';
+      document.getElementById('soundBoxSlots').innerHTML = m.p.map((_, i) => `<div class="tile-slot" id="slot-${i}"></div>`).join('');
+      
+      document.getElementById('letterOptions').innerHTML = m.o.map(c => `<button class="letter-btn" onclick="handleChoice('${c}')">${c}</button>`).join('');
+      pronounceCurrentWord();
+    }
+
+    function pronounceCurrentWord() {
+      speak(spellMissions[sIdx].w.toLowerCase());
+    }
+    
+    function revealWord() {
+      const revealEl = document.getElementById('spellingReveal');
+      revealEl.innerText = spellMissions[sIdx].w;
+      revealEl.style.display = 'block';
+    }
+    
+    function handleChoice(char) {
+      if (char === spellMissions[sIdx].p[slotProg]) {
+        let slot = document.getElementById(`slot-${slotProg}`); 
+        slot.innerText = char; 
+        slot.classList.add('filled');
+        speak(char.toLowerCase()); 
+        slotProg++;
+        if (slotProg === spellMissions[sIdx].p.length) {
+          sessionProg.spell++; 
+          updateLifetimeProg('spell'); 
+          addStars(3);
+          speak("Awesome job!");
+          checkUnlocks(); 
+          setTimeout(() => { skipSpelling(); }, 1500);
+        }
+      } else { 
+        speak("Try next sound."); 
+      }
+    }
+
+    function resetSpelling() { initSpellingMission(); }
+    function skipSpelling() { sIdx = (sIdx + 1) % spellMissions.length; initSpellingMission(); }
+
+    function renderWeekTracker(currentStreak) {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      let html = '';
+      
+      for(let i=0; i<7; i++) {
+        let statusClass = '';
+        let icon = '';
+        
+        if (i < currentStreak % 7 || (currentStreak > 0 && currentStreak % 7 === 0)) {
+          statusClass = 'done';
+          icon = '✓';
+        } else if (i === currentStreak % 7) {
+          statusClass = 'today';
+        }
+
+        html += `
+          <div class="day-bubble ${statusClass}">
+            <div class="day-circle">${icon}</div>
+            <div class="day-lbl">${days[i]}</div>
+          </div>
+        `;
+      }
+      document.getElementById('weekTrackerUI').innerHTML = html;
+    }
+
+    function initDashboard() {
+      updateGlobalStats();
+      const today = getTodayStr(), lastDate = localStorage.getItem(K_LAST_DATE());
+      let currentStreak = parseInt(localStorage.getItem(K_STREAK()) || '0');
+      
+      if (lastDate && lastDate !== today) {
+        const diff = (new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+        if (diff > 2) { 
+          currentStreak = 0; 
+          localStorage.setItem(K_STREAK(), '0'); 
+        }
+      }
+      
+      document.getElementById('streakMainText').innerText = currentStreak;
+      renderWeekTracker(currentStreak);
+      updateDashboard();
+    }
+
+    function updateLifetimeProg(type) {
+      let life = JSON.parse(localStorage.getItem(K_LIFE()) || '{"trace":0, "spell":0, "art":0}');
+      life[type]++; 
+      localStorage.setItem(K_LIFE(), JSON.stringify(life));
+
+      let prog = JSON.parse(localStorage.getItem(K_PROG()) || '{"trace":0, "spell":0, "art":0, "date": ""}');
+      if (prog.date !== getTodayStr()) prog = {"trace":0, "spell":0, "art":0, "date": getTodayStr()};
+      prog[type]++; 
+      localStorage.setItem(K_PROG(), JSON.stringify(prog));
+
+      if (prog.trace >= TARGETS.trace && prog.spell >= TARGETS.spell) {
+        if (localStorage.getItem(K_LAST_DATE()) !== getTodayStr()) {
+          localStorage.setItem(K_LAST_DATE(), getTodayStr());
+          let streak = parseInt(localStorage.getItem(K_STREAK()) || '0') + 1;
+          localStorage.setItem(K_STREAK(), streak);
+          addStars(10);
+          initDashboard();
+        }
+      }
+    }
+
+    function checkUnlocks() {
+      updateDashboard();
+      if (sessionProg.trace >= TARGETS.trace && sessionProg.spell >= TARGETS.spell && !artUnlocked) {
+        artUnlocked = true; 
+        document.getElementById('dashArtCard').classList.remove('locked-card');
+        document.getElementById('nav-artpad').classList.remove('locked');
+        document.getElementById('artLockIcon').style.display = 'none';
+        speak("Targets Met! Art Studio is now Unlocked!");
+      }
+    }
+
+    function updateDashboard() {
+      document.getElementById('dashTargetTrace').innerText = TARGETS.trace;
+      document.getElementById('dashTargetSpell').innerText = TARGETS.spell;
+      
+      let dispTrace = Math.min(sessionProg.trace, TARGETS.trace);
+      let dispSpell = Math.min(sessionProg.spell, TARGETS.spell);
+      
+      document.getElementById('dashCountTrace').innerText = dispTrace;
+      document.getElementById('dashCountSpell').innerText = dispSpell;
+      
+      document.getElementById('artTimeDisp').innerText = appSettings.timerMins;
+
+      if(artUnlocked) {
+        document.getElementById('dashArtCard').classList.remove('locked-card');
+        document.getElementById('nav-artpad').classList.remove('locked');
+        document.getElementById('artLockIcon').style.display = 'none';
+      } else {
+        document.getElementById('dashArtCard').classList.add('locked-card');
+        document.getElementById('nav-artpad').classList.add('locked');
+        document.getElementById('artLockIcon').style.display = 'flex';
+      }
+    }
+
+    function saveArtReward() {
+      speak("Sketch saved. Awesome job today!");
+      updateLifetimeProg('art'); 
+      addStars(5); 
+      clearCanvas('artCanvas');
+      
+      sessionProg.trace = 0; 
+      sessionProg.spell = 0; 
+      artUnlocked = false;
+      
+      updateDashboard(); 
+      switchTab('dashboard'); 
+    }
+
+    function setupCanvas(id) {
+      const cvs = document.getElementById(id), ctx = cvs.getContext('2d');
+      const resize = () => { 
+        const r = cvs.parentElement.getBoundingClientRect(); 
+        cvs.width = r.width; 
+        cvs.height = r.height; 
+      };
+      resize(); 
+      window.addEventListener('resize', resize);
+      let drw = false;
+      
+      const getP = e => { 
+        const r = cvs.getBoundingClientRect(); 
+        const t = e.touches ? e.touches[0] : e; 
+        return { x: t.clientX - r.left, y: t.clientY - r.top }; 
+      };
+      const start = e => { 
+        drw = true; 
+        ctx.beginPath(); 
+        const p = getP(e); 
+        ctx.moveTo(p.x, p.y); 
+      };
+      const move = e => { 
+        if (!drw) return; 
+        const p = getP(e); 
+        ctx.lineWidth = id==='traceCanvas' ? 14 : 5; 
+        ctx.lineCap = 'round'; 
+        ctx.strokeStyle = id==='traceCanvas' ? '#3B82F6' : '#1E293B'; 
+        ctx.lineTo(p.x, p.y); 
+        ctx.stroke(); 
+      };
+      const end = () => { 
+        // Instantly check accuracy upon lifting finger
+        if(drw && id === 'traceCanvas') {
+          checkAndAdvanceTrace(); 
+        }
+        drw = false; 
+      };
+      
+      cvs.addEventListener('mousedown', start); 
+      cvs.addEventListener('mousemove', move); 
+      window.addEventListener('mouseup', end);
+      cvs.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false}); 
+      cvs.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false}); 
+      window.addEventListener('touchend', end);
+    }
+
+    function clearCanvas(id) { 
+      const cvs = document.getElementById(id);
+      cvs.getContext('2d').clearRect(0, 0, cvs.width, cvs.height); 
+      if (document.getElementById('accuracyResult')) {
+        document.getElementById('accuracyResult').style.display = 'none'; 
+      }
+    }
+
+    window.onload = () => { 
+      shuffleArray(revTargets);
+      shuffleArray(spellMissions);
+      initDashboard(); 
+      initTraceTarget(); 
+      initSpellingMission(); 
+      currentTimerPhase = 'WORK'; 
+      startTimer(appSettings.timerMins); 
+    };
+  </script>
+</body>
+</html>
