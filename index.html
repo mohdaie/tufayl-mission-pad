@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Tufayl's Mission Pad</title>
+  <meta name="description" content="A dyslexia-friendly handwriting, spelling and creative learning mission pad for children." />
+  <meta name="theme-color" content="#FDFBF7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mission Pad" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -149,6 +157,8 @@
     .day-bubble.done .day-circle { background: #10B981; color: white; font-weight: bold; }
     .day-bubble.today .day-circle { background: #FEF3C7; border-color: #F59E0B; }
     .day-bubble.today .day-circle::after { content: ''; width: 10px; height: 10px; background: #F59E0B; border-radius: 50%; }
+    .day-bubble.done.today .day-circle { background: #10B981; border-color: #F59E0B; color: white; }
+    .day-bubble.done.today .day-circle::after { display: none; }
     .day-lbl { font-size: 0.7rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;}
 
     .motivation-banner { background: #FFF; border-radius: 20px; padding: 20px; width: 100%; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #E2E8F0; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
@@ -256,7 +266,7 @@
       <div class="logo-icon">🚀</div>
       <div class="logo-text">
         <span class="logo-text-main">Tufayl's Mission Pad</span>
-        <span class="logo-text-sub">Small Steps Big Progress</span>
+        <span class="logo-text-sub">Small Steps Big Progress • v2.0</span>
       </div>
     </div>
     <div class="status-bar">
@@ -378,6 +388,7 @@
       <div class="module-card">
         <h3 id="spellingWordLabel" style="font-size: 1.6rem; color: var(--text-spell); margin-bottom: 4px; font-weight: 900;">Spelling Mission</h3>
         <p style="font-size: 1rem; color: #64748B; font-weight: 700;">Listen and build the word!</p>
+        <div id="spellLevelBadge" style="display:inline-flex; margin-top:8px; padding:6px 12px; border-radius:9999px; background:#ECFDF5; color:#047857; font-size:0.82rem; font-weight:900;">🌱 Foundation</div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
           <div id="spellingReveal" style="display: none; font-size: 1.8rem; font-weight: 900; color: var(--text-spell); letter-spacing: 6px; padding: 10px 20px; border: 2px dashed #A7F3D0; border-radius: 12px; background: #ECFDF5;">WORD</div>
@@ -518,6 +529,14 @@
       <div class="setting-group"><label>Timer Duration (Minutes)</label><input type="number" id="setTimer" min="1" max="15"></div>
       <div class="setting-group"><label>Letters to Trace to Unlock Art</label><input type="number" id="setTrace" min="1" max="50"></div>
       <div class="setting-group"><label>Words to Spell to Unlock Art</label><input type="number" id="setSpell" min="1" max="50"></div>
+      <div class="setting-group">
+        <label>Spelling Level</label>
+        <select id="setSpellLevel">
+          <option value="foundation">🌱 Foundation — short phonics words</option>
+          <option value="growing">🌿 Growing — common everyday words</option>
+          <option value="explorer">🚀 Explorer — longer challenge words</option>
+        </select>
+      </div>
       
       <div style="background: #F8FAFC; padding: 16px; border-radius: 16px; margin-top: 15px; margin-bottom: 15px; border: 1px solid #E2E8F0;">
         <h4 style="margin-bottom: 10px; font-size: 1rem; color:#334155;">Lifetime Stats for <span id="statsProfileName"></span></h4>
@@ -607,7 +626,19 @@
       }
     }
 
-    const getTodayStr = () => new Date().toISOString().split('T')[0];
+    function formatLocalDate(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseLocalDate(value) {
+      const [y, m, d] = value.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    const getTodayStr = () => formatLocalDate(new Date());
 
     // Profiles default to Tufayl without asking
     let savedProfiles = JSON.parse(localStorage.getItem('saved_profiles')) || ['Tufayl'];
@@ -623,7 +654,10 @@
     document.getElementById('profileDisplayName').innerText = activeProfile;
     document.getElementById('statsProfileName').innerText = activeProfile;
 
-    let appSettings = JSON.parse(localStorage.getItem('app_settings')) || { timerMins: 3, traceTarget: 10, spellTarget: 10 };
+    let appSettings = Object.assign(
+      { timerMins: 3, traceTarget: 10, spellTarget: 10, spellLevel: 'foundation' },
+      JSON.parse(localStorage.getItem('app_settings') || '{}')
+    );
     let TARGETS = { trace: appSettings.traceTarget, spell: appSettings.spellTarget };
     let sessionProg = { trace: 0, spell: 0 };
     let artUnlocked = false;
@@ -637,6 +671,53 @@
     const K_LAST_DATE = () => `${activeProfile}_date`;
     const K_PROG = () => `${activeProfile}_prog`;
     const K_LIFE = () => `${activeProfile}_life`;
+    const K_HISTORY = () => `${activeProfile}_completion_history`;
+
+    function getDailyProgress() {
+      const today = getTodayStr();
+      let prog = JSON.parse(localStorage.getItem(K_PROG()) || '{"trace":0,"spell":0,"art":0,"date":""}');
+      if (prog.date !== today) prog = { trace: 0, spell: 0, art: 0, date: today };
+      return prog;
+    }
+
+    function getCompletionHistory() {
+      let history = JSON.parse(localStorage.getItem(K_HISTORY()) || '[]');
+      if (!Array.isArray(history)) history = [];
+
+      // One-time migration from the original streak model.
+      if (history.length === 0) {
+        const legacyLast = localStorage.getItem(K_LAST_DATE());
+        const legacyStreak = parseInt(localStorage.getItem(K_STREAK()) || '0');
+        if (legacyLast && legacyStreak > 0) {
+          const end = parseLocalDate(legacyLast);
+          for (let i = 0; i < legacyStreak; i++) {
+            const d = new Date(end);
+            d.setDate(end.getDate() - i);
+            history.push(formatLocalDate(d));
+          }
+        }
+      }
+
+      history = [...new Set(history)].sort();
+      localStorage.setItem(K_HISTORY(), JSON.stringify(history));
+      return history;
+    }
+
+    function calculateStreak(history) {
+      if (!history.length) return 0;
+      const done = new Set(history);
+      const today = new Date();
+      const cursor = new Date(today);
+
+      if (!done.has(formatLocalDate(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+      let streak = 0;
+      while (done.has(formatLocalDate(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    }
 
     function openProfileModal() {
       const selectEl = document.getElementById('profileSelect');
@@ -702,6 +783,7 @@
       document.getElementById('setTimer').value = appSettings.timerMins;
       document.getElementById('setTrace').value = appSettings.traceTarget;
       document.getElementById('setSpell').value = appSettings.spellTarget;
+      document.getElementById('setSpellLevel').value = appSettings.spellLevel;
       
       let life = JSON.parse(localStorage.getItem(K_LIFE()) || '{"trace":0, "spell":0, "art":0}');
       document.getElementById('lifeTrace').innerText = life.trace;
@@ -717,10 +799,15 @@
       appSettings.timerMins = parseInt(document.getElementById('setTimer').value) || 3;
       appSettings.traceTarget = parseInt(document.getElementById('setTrace').value) || 10;
       appSettings.spellTarget = parseInt(document.getElementById('setSpell').value) || 10;
+      appSettings.spellLevel = document.getElementById('setSpellLevel').value || 'foundation';
       TARGETS.trace = appSettings.traceTarget; 
       TARGETS.spell = appSettings.spellTarget;
       localStorage.setItem('app_settings', JSON.stringify(appSettings));
+      buildSpellMissions();
+      sIdx = 0;
+      initSpellingMission();
       closeSettings(); 
+      checkUnlocks();
       updateDashboard(); 
       startTimer(appSettings.timerMins);
     }
@@ -735,6 +822,7 @@
             localStorage.removeItem(K_LAST_DATE()); 
             localStorage.removeItem(K_PROG()); 
             localStorage.removeItem(K_LIFE());
+            localStorage.removeItem(K_HISTORY());
             sessionProg = { trace: 0, spell: 0 }; 
             artUnlocked = false;
             closeSettings();
@@ -753,6 +841,7 @@
             localStorage.removeItem(K_LAST_DATE()); 
             localStorage.removeItem(K_PROG()); 
             localStorage.removeItem(K_LIFE());
+            localStorage.removeItem(K_HISTORY());
             
             savedProfiles = savedProfiles.filter(p => p !== activeProfile);
             if (savedProfiles.length === 0) savedProfiles = ['Tufayl'];
@@ -858,40 +947,57 @@
       }
     });
 
-    const rawWords = ("CAT DOG PIG HAT SUN RUN BUN FUN MAP CAP MAT SAT RED BLUE PINK GOLD FISH BIRD TREE LEAF " + 
-                      "APPLE GRAPE MELON PEACH PLUM PEAR KIWI STAR MOON MARS VENUS EARTH SPACE ROCKET SHIP BOAT " + 
-                      "CAR BUS VAN TRAIN BIKE PLANE JET BIRD NEST EGG BUG ANT BEE FLY MOTH WORM TOAD FROG NEWT " + 
-                      "BEAR LION TIGER WOLF FOX DEER FAWN CUB CALF PUP KITTEN FOAL DUCK SWAN GOOSE HAWK OWL CROW " + 
-                      "DESK CHAIR TABLE BED SOFA LAMP RUG DOOR ROOF WALL ROOM HALL HOME TOWN CITY PARK YARD POOL " + 
-                      "LAKE POND SEA OCEAN GULF BAY COVE CAPE REEF SAND DIRT DUST ROCK MUD CLAY HILL MOUNTAIN PEAK " + 
-                      "VALLEY CAVE MINE PIT HOLE TRENCH CANYON WIND BREEZE GALE STORM RAIN SNOW HAIL SLEET ICE COLD " + 
-                      "HOT WARM COOL FIRE FLAME BURN ASH SMOKE WOOD LOG STICK TWIG LEAF ROOT BARK STEM SEED NUT " + 
-                      "BUSH SHRUB VINE WEED GRASS MOSS FERN PINE OAK ELM ASH MAPLE BIRCH CEDAR FIR YEW PALM CACTUS " + 
-                      "ROSE LILY DAISY TULIP IRIS ORCHID VIOLET PANSY ASTER POPPY CLOVER WHEAT CORN OATS RICE BEAN " + 
-                      "PEA YAM POTATO TOMATO ONION CARROT CELERY RADISH TURNIP BEET SQUASH PUMPKIN MELON GOURD BERRY " + 
-                      "CHERRY PLUM PEACH APPLE PEAR FIG DATE GRAPE OLIVE LEMON LIME ORANGE BANANA MANGO PAPAYA COCOA " + 
-                      "COFFEE TEA MILK JUICE WATER SODA WINE BEER MEAD SOUP STEW BROTH SAUCE GRAVY SYRUP HONEY JAM " + 
-                      "JELLY BUTTER CHEESE CREAM YOGURT BREAD ROLL BUN CAKE PIE TART COOKIE BISCUIT CRACKER CHIP " + 
-                      "NUT SEED MEAT BEEF PORK LAMB VEAL HAM BACON SAUSAGE BOLOGNA SALAMI PEPPERONI CHICKEN TURKEY " + 
-                      "DUCK GOOSE QUAIL DOVE PIGEON FISH SHARK RAY SKATE EEL CARP TROUT SALMON TUNA COD PIKE BASS " + 
-                      "PERCH CRAB SHRIMP PRAWN CLAM OYSTER MUSSEL SNAIL SLUG WORM SQUID OCTOPUS STARFISH URCHIN " + 
-                      "SPONGE CORAL JELLY TUNICATE INSECT BUG BEETLE MOTH BUTTERFLY FLY MOSQUITO GNAT FLEA LOUSE " + 
-                      "TICK MITE SPIDER SCORPION CENTIPEDE MILLIPEDE CRAB LOBSTER CRAYFISH WOODLOUSE BARNACLE " + 
-                      "WORM LEECH EARTHWORM FLATWORM ROUNDWORM HAIRWORM RIBBONWORM ARROWWORM ACORNWORM STARFISH " + 
-                      "URCHIN CUCUMBER LILY FEATHER BRITTLE STAR BASKET STAR SEA DAISY SEA LILY SEA CUCUMBER").split(' ');
+    const SPELL_CURRICULUM = {
+      foundation: [
+        'CAT','DOG','PIG','HEN','SUN','RUN','FUN','MAP','CAP','MAT','HAT','BAT','RED','BED','PEN','TEN',
+        'CUP','BUS','CAR','FOX','BOX','LOG','HOP','TOP','POT','NET','PET','SIT','FIT','BIG','DIG','PIN',
+        'WIN','JAM','RAM','VAN','CAN','MAN','FAN','BAG','TAG','RAG','LEG','PEG','JET','WET','RUG','MUG',
+        'BUG','ANT','BEE','OWL','EGG','FISH','BIRD','TREE','STAR','MOON'
+      ],
+      growing: [
+        'APPLE','GRAPE','MELON','PEACH','PLUM','PEAR','KIWI','EARTH','SPACE','ROCKET','SHIP','BOAT','TRAIN',
+        'BIKE','PLANE','NEST','FROG','BEAR','LION','TIGER','WOLF','DEER','DUCK','SWAN','GOOSE','HAWK','DESK',
+        'CHAIR','TABLE','LAMP','DOOR','HOME','TOWN','CITY','PARK','YARD','POOL','LAKE','POND','OCEAN','SAND',
+        'ROCK','HILL','RAIN','SNOW','COLD','WARM','FIRE','WOOD','LEAF','SEED','GRASS','CLOUD','SMILE','HAPPY'
+      ],
+      explorer: [
+        'PLANET','COMET','SATURN','JUPITER','FOREST','RIVER','VALLEY','GARDEN','FLOWER','RAINBOW','THUNDER',
+        'SUNNY','CLOUDY','RABBIT','TURTLE','DOLPHIN','PENGUIN','MONKEY','ZEBRA','GIRAFFE','ELEPHANT','KANGAROO',
+        'BANANA','ORANGE','CARROT','PUMPKIN','SCHOOL','PENCIL','PAPER','WINDOW','KITCHEN','BEDROOM','LIBRARY',
+        'FRIEND','FAMILY','BRAVE','KINDNESS','MORNING','EVENING','JOURNEY','ADVENTURE','CAPTAIN','MISSION',
+        'SUPERHERO','DISCOVER','CREATE','LEARNING'
+      ]
+    };
 
-    let spellMissions = rawWords.map(w => {
-       let p = w.split('');
-       let o = [...p];
-       while(o.length < p.length + 3) {
-          let rc = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-          if(!o.includes(rc)) o.push(rc);
-       }
-       shuffleArray(o);
-       return { w: w, p: p, o: o };
-    });
+    const SPELL_LEVEL_LABELS = {
+      foundation: '🌱 Foundation',
+      growing: '🌿 Growing',
+      explorer: '🚀 Explorer'
+    };
 
-    let tIdx = 0;
+    let spellMissions = [];
+    function buildSpellMissions() {
+      const level = SPELL_CURRICULUM[appSettings.spellLevel] ? appSettings.spellLevel : 'foundation';
+      appSettings.spellLevel = level;
+      const words = [...SPELL_CURRICULUM[level]];
+      shuffleArray(words);
+      spellMissions = words.map(w => {
+        const p = w.split('');
+        const o = [...new Set(p)];
+        while (o.length < Math.min(10, p.length + 4)) {
+          const rc = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          if (!o.includes(rc)) o.push(rc);
+        }
+        shuffleArray(o);
+        return { w, p, o };
+      });
+      const badge = document.getElementById('spellLevelBadge');
+      if (badge) badge.innerText = SPELL_LEVEL_LABELS[level];
+    }
+
+    buildSpellMissions();
+
+    let tIdx = 0;    let tIdx = 0;
     function initTraceTarget() {
       const itm = revTargets[tIdx];
       document.getElementById('traceLabel').innerText = `Trace Target: "${itm.char}"`;
@@ -903,48 +1009,83 @@
       speak(itm.snd);
     }
 
-    function checkAndAdvanceTrace() {
-      const cvs = document.getElementById('traceCanvas'), ctx = cvs.getContext('2d'), w = cvs.width, h = cvs.height;
-      const osC = document.createElement('canvas'); osC.width = w; osC.height = h;
-      const osCtx = osC.getContext('2d'); 
-      osCtx.font = "140px 'Nunito', monospace"; 
-      osCtx.fontWeight = "900";
-      osCtx.textAlign = "center"; 
-      osCtx.textBaseline = "middle";
-      osCtx.fillText(revTargets[tIdx].char, w/2, h/2);
-      
-      const tData = osCtx.getImageData(0,0,w,h).data, uData = ctx.getImageData(0,0,w,h).data;
-      let tPx = 0, hPx = 0, uPx = 0;
-      
-      for(let i=3; i<tData.length; i+=4) {
-        if (tData[i] > 50) tPx++;
-        if (tData[i] > 50 && uData[i] > 50) hPx++;
-        if (uData[i] > 50) uPx++;
+    function checkAndAdvanceTrace(pathLength = 0) {
+      const cvs = document.getElementById('traceCanvas');
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width, h = cvs.height;
+
+      const coreCanvas = document.createElement('canvas');
+      const toleranceCanvas = document.createElement('canvas');
+      coreCanvas.width = toleranceCanvas.width = w;
+      coreCanvas.height = toleranceCanvas.height = h;
+      const coreCtx = coreCanvas.getContext('2d');
+      const tolCtx = toleranceCanvas.getContext('2d');
+
+      const configureGlyph = targetCtx => {
+        targetCtx.font = "900 140px 'Nunito', sans-serif";
+        targetCtx.textAlign = 'center';
+        targetCtx.textBaseline = 'middle';
+        targetCtx.lineJoin = 'round';
+        targetCtx.lineCap = 'round';
+      };
+
+      configureGlyph(coreCtx);
+      coreCtx.fillStyle = '#000';
+      coreCtx.fillText(revTargets[tIdx].char, w / 2, h / 2);
+
+      configureGlyph(tolCtx);
+      tolCtx.fillStyle = '#000';
+      tolCtx.strokeStyle = '#000';
+      tolCtx.lineWidth = 28;
+      tolCtx.strokeText(revTargets[tIdx].char, w / 2, h / 2);
+      tolCtx.fillText(revTargets[tIdx].char, w / 2, h / 2);
+
+      const coreData = coreCtx.getImageData(0, 0, w, h).data;
+      const tolData = tolCtx.getImageData(0, 0, w, h).data;
+      const userData = ctx.getImageData(0, 0, w, h).data;
+
+      let corePx = 0, userPx = 0, overlapTol = 0, overlapCore = 0;
+      for (let i = 3; i < userData.length; i += 4) {
+        const user = userData[i] > 50;
+        const core = coreData[i] > 50;
+        const tolerant = tolData[i] > 50;
+        if (core) corePx++;
+        if (user) userPx++;
+        if (user && tolerant) overlapTol++;
+        if (user && core) overlapCore++;
       }
-      
-      let acc = tPx === 0 ? 0 : Math.round((hPx / tPx) * 100);
-      if (uPx > tPx * 2.5) acc = Math.round(acc * 0.6); 
-      
+
+      const precision = userPx ? overlapTol / userPx : 0;
+      const coreCoverage = corePx ? overlapCore / corePx : 0;
+      const usefulCoverage = Math.min(1, coreCoverage / 0.22);
+      let acc = Math.round((precision * 65 + usefulCoverage * 35) * 100);
+
+      const minPath = Math.max(90, Math.min(w, h) * 0.45);
+      if (pathLength < minPath) acc = Math.min(acc, 35);
+      acc = Math.max(0, Math.min(100, acc));
+
       const res = document.getElementById('accuracyResult');
-      res.style.display = 'inline-block'; 
-      
+      res.style.display = 'inline-block';
+
       if (acc >= 50) {
         res.innerText = `Accuracy: ${acc}% 😀`;
-        res.className = 'accuracy-badge acc-pass'; 
-        speak("Great trace!");
-        sessionProg.trace++; 
-        consecutiveWrongTraces = 0; // Reset oopsies!
-        updateLifetimeProg('trace'); 
-        addStars(1); // 1 Star exactly.
+        res.className = 'accuracy-badge acc-pass';
+        speak('Great trace!');
+        sessionProg.trace++;
+        consecutiveWrongTraces = 0;
+        updateLifetimeProg('trace');
+        addStars(1);
         checkUnlocks();
         setTimeout(() => { forceNextTrace(); }, 1200);
       } else {
-        res.innerText = `Accuracy: ${acc}% 💪`;
-        res.className = 'accuracy-badge acc-fail'; 
+        res.innerText = pathLength < minPath
+          ? `Keep tracing the whole shape 💪`
+          : `Accuracy: ${acc}% 💪`;
+        res.className = 'accuracy-badge acc-fail';
         consecutiveWrongTraces++;
-        if(consecutiveWrongTraces >= 3) {
-            consecutiveWrongTraces = 0;
-            addStars(-1);
+        if (consecutiveWrongTraces >= 3) {
+          consecutiveWrongTraces = 0;
+          addStars(-1);
         }
       }
     }
@@ -1027,23 +1168,28 @@
         initSpellingMission(); 
     }
 
-    function renderWeekTracker(currentStreak) {
+    function renderWeekTracker(history) {
+      const done = new Set(history);
+      const now = new Date();
+      const monday = new Date(now);
+      const day = (now.getDay() + 6) % 7;
+      monday.setDate(now.getDate() - day);
+
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const today = getTodayStr();
       let html = '';
-      
-      for(let i=0; i<7; i++) {
-        let statusClass = '';
-        let icon = '';
-        
-        if (i < currentStreak % 7 || (currentStreak > 0 && currentStreak % 7 === 0)) {
-          statusClass = 'done';
-          icon = '✓';
-        } else if (i === currentStreak % 7) {
-          statusClass = 'today';
-        }
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        const key = formatLocalDate(date);
+        const isDone = done.has(key);
+        const isToday = key === today;
+        const classes = [isDone ? 'done' : '', isToday ? 'today' : ''].filter(Boolean).join(' ');
+        const icon = isDone ? '✓' : '';
 
         html += `
-          <div class="day-bubble ${statusClass}">
+          <div class="day-bubble ${classes}" title="${key}">
             <div class="day-circle">${icon}</div>
             <div class="day-lbl">${days[i]}</div>
           </div>
@@ -1053,53 +1199,64 @@
     }
 
     function initDashboard() {
-      updateGlobalStats();
-      const today = getTodayStr(), lastDate = localStorage.getItem(K_LAST_DATE());
-      let currentStreak = parseInt(localStorage.getItem(K_STREAK()) || '0');
-      
-      if (lastDate && lastDate !== today) {
-        const diff = (new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
-        if (diff > 2) { 
-          currentStreak = 0; 
-          localStorage.setItem(K_STREAK(), '0'); 
-        }
-      }
-      
+      const prog = getDailyProgress();
+      sessionProg = { trace: prog.trace || 0, spell: prog.spell || 0 };
+      artUnlocked = sessionProg.trace >= TARGETS.trace && sessionProg.spell >= TARGETS.spell;
+
+      const history = getCompletionHistory();
+      const currentStreak = calculateStreak(history);
+      localStorage.setItem(K_STREAK(), currentStreak);
+
       document.getElementById('streakMainText').innerText = currentStreak;
-      renderWeekTracker(currentStreak);
+      renderWeekTracker(history);
+      updateGlobalStats();
       updateDashboard();
     }
 
     function updateLifetimeProg(type) {
-      let life = JSON.parse(localStorage.getItem(K_LIFE()) || '{"trace":0, "spell":0, "art":0}');
-      life[type]++; 
+      let life = JSON.parse(localStorage.getItem(K_LIFE()) || '{"trace":0,"spell":0,"art":0}');
+      life[type] = (life[type] || 0) + 1;
       localStorage.setItem(K_LIFE(), JSON.stringify(life));
 
-      let prog = JSON.parse(localStorage.getItem(K_PROG()) || '{"trace":0, "spell":0, "art":0, "date": ""}');
-      if (prog.date !== getTodayStr()) prog = {"trace":0, "spell":0, "art":0, "date": getTodayStr()};
-      prog[type]++; 
+      const prog = getDailyProgress();
+      prog[type] = (prog[type] || 0) + 1;
       localStorage.setItem(K_PROG(), JSON.stringify(prog));
 
+      sessionProg.trace = prog.trace || 0;
+      sessionProg.spell = prog.spell || 0;
+
       if (prog.trace >= TARGETS.trace && prog.spell >= TARGETS.spell) {
-        if (localStorage.getItem(K_LAST_DATE()) !== getTodayStr()) {
-          localStorage.setItem(K_LAST_DATE(), getTodayStr());
-          let streak = parseInt(localStorage.getItem(K_STREAK()) || '0') + 1;
-          localStorage.setItem(K_STREAK(), streak);
-          addStars(5); // Big streak bonus!
-          initDashboard();
+        const today = getTodayStr();
+        const history = getCompletionHistory();
+        if (!history.includes(today)) {
+          history.push(today);
+          history.sort();
+          localStorage.setItem(K_HISTORY(), JSON.stringify(history));
+          localStorage.setItem(K_LAST_DATE(), today);
+          localStorage.setItem(K_STREAK(), calculateStreak(history));
+          addStars(5);
+          speak('Daily mission complete! Great work!');
         }
       }
     }
 
     function checkUnlocks() {
-      updateDashboard();
-      if (sessionProg.trace >= TARGETS.trace && sessionProg.spell >= TARGETS.spell && !artUnlocked) {
-        artUnlocked = true; 
-        document.getElementById('dashArtCard').classList.remove('locked-card');
-        document.getElementById('nav-artpad').classList.remove('locked');
-        document.getElementById('artLockIcon').style.display = 'none';
-        speak("Targets Met! Art Studio is now Unlocked!");
+      const wasUnlocked = artUnlocked;
+      const prog = getDailyProgress();
+      sessionProg.trace = prog.trace || 0;
+      sessionProg.spell = prog.spell || 0;
+      artUnlocked = sessionProg.trace >= TARGETS.trace && sessionProg.spell >= TARGETS.spell;
+
+      if (artUnlocked && !wasUnlocked) {
+        speak('Targets met! Art Studio is now unlocked!');
       }
+      updateDashboard();
+
+      const history = getCompletionHistory();
+      const currentStreak = calculateStreak(history);
+      localStorage.setItem(K_STREAK(), currentStreak);
+      document.getElementById('streakMainText').innerText = currentStreak;
+      renderWeekTracker(history);
     }
 
     function updateDashboard() {
@@ -1435,63 +1592,73 @@
     };
 
     function saveArtReward() {
-      speak("Masterpiece saved! I am so proud of your hard work today!");
-      updateLifetimeProg('art'); 
-      addStars(5); // Big reward for finishing Art!
-      
-      artApp.quietClear(); // Clean canvas quietly for next time
-      
-      sessionProg.trace = 0; 
-      sessionProg.spell = 0; 
-      artUnlocked = false;
-      
-      updateDashboard(); 
-      switchTab('dashboard'); 
+      speak('Masterpiece saved! I am so proud of your hard work today!');
+      updateLifetimeProg('art');
+      addStars(5);
+
+      artApp.quietClear();
+
+      // Daily learning targets stay completed for the rest of the day.
+      // Art Studio therefore remains an earned reward instead of re-locking after each save.
+      checkUnlocks();
+      switchTab('dashboard');
     }
 
     function setupCanvas(id) {
-      if(id === 'artCanvas') return; // Handled by artApp engine now!
+      if(id === 'artCanvas') return;
 
       const cvs = document.getElementById(id), ctx = cvs.getContext('2d');
-      const resize = () => { 
-        const r = cvs.parentElement.getBoundingClientRect(); 
-        cvs.width = r.width; 
-        cvs.height = r.height; 
+      const resize = () => {
+        const r = cvs.parentElement.getBoundingClientRect();
+        cvs.width = r.width;
+        cvs.height = r.height;
       };
-      resize(); 
+      resize();
       window.addEventListener('resize', resize);
+
       let drw = false;
-      
-      const getP = e => { 
-        const r = cvs.getBoundingClientRect(); 
-        const t = e.touches ? e.touches[0] : e; 
-        return { x: t.clientX - r.left, y: t.clientY - r.top }; 
+      let lastPoint = null;
+      let pathLength = 0;
+
+      const getP = e => {
+        const r = cvs.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return { x: t.clientX - r.left, y: t.clientY - r.top };
       };
-      const start = e => { 
-        drw = true; 
-        ctx.beginPath(); 
-        const p = getP(e); 
-        ctx.moveTo(p.x, p.y); 
+
+      const start = e => {
+        drw = true;
+        pathLength = 0;
+        ctx.beginPath();
+        const p = getP(e);
+        lastPoint = p;
+        ctx.moveTo(p.x, p.y);
       };
-      const move = e => { 
-        if (!drw) return; 
-        const p = getP(e); 
-        ctx.lineWidth = 14; 
-        ctx.lineCap = 'round'; 
-        ctx.strokeStyle = '#3B82F6'; 
-        ctx.lineTo(p.x, p.y); 
-        ctx.stroke(); 
+
+      const move = e => {
+        if (!drw) return;
+        const p = getP(e);
+        if (lastPoint) pathLength += Math.hypot(p.x - lastPoint.x, p.y - lastPoint.y);
+        lastPoint = p;
+        ctx.lineWidth = 14;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#3B82F6';
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
       };
-      const end = () => { 
-        if(drw) checkAndAdvanceTrace(); 
-        drw = false; 
+
+      const end = () => {
+        if (drw) checkAndAdvanceTrace(pathLength);
+        drw = false;
+        lastPoint = null;
       };
-      
-      cvs.addEventListener('mousedown', start); 
-      cvs.addEventListener('mousemove', move); 
+
+      cvs.addEventListener('mousedown', start);
+      cvs.addEventListener('mousemove', move);
       window.addEventListener('mouseup', end);
-      cvs.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false}); 
-      cvs.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false}); 
+      cvs.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false});
+      cvs.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false});
       window.addEventListener('touchend', end);
     }
 
@@ -1503,15 +1670,21 @@
       }
     }
 
-    window.onload = () => { 
+    window.onload = () => {
       shuffleArray(revTargets);
-      shuffleArray(spellMissions);
-      initDashboard(); 
-      initTraceTarget(); 
-      initSpellingMission(); 
-      artApp.init(); // Initialize robust new art engine
-      currentTimerPhase = 'WORK'; 
-      startTimer(appSettings.timerMins); 
+      buildSpellMissions();
+      initDashboard();
+      initTraceTarget();
+      initSpellingMission();
+      artApp.init();
+      currentTimerPhase = 'WORK';
+      startTimer(appSettings.timerMins);
+
+      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.warn('Service worker registration failed:', err);
+        });
+      }
     };
   </script>
 </body>
