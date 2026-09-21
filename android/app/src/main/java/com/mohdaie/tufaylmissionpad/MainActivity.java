@@ -5,11 +5,15 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.widget.FrameLayout;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
@@ -33,12 +37,55 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         textToSpeech = new TextToSpeech(this, this);
 
+        final int cream = Color.rgb(253, 251, 247);
+        final int white = Color.WHITE;
+
+        getWindow().setStatusBarColor(cream);
+        getWindow().setNavigationBarColor(white);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        );
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(cream);
+        root.setFitsSystemWindows(false);
+
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.rgb(253, 251, 247));
+        webView.setBackgroundColor(cream);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         webView.setHapticFeedbackEnabled(false);
         configureWebView(webView);
-        setContentView(webView);
+
+        root.addView(
+                webView,
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+
+        // Android 15/16 enforce edge-to-edge for modern target SDKs.
+        // Keep Mission Pad below the status bar and above the gesture/navigation area.
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            int top;
+            int bottom;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Insets systemBars = insets.getInsets(WindowInsets.Type.systemBars());
+                top = systemBars.top;
+                bottom = systemBars.bottom;
+            } else {
+                top = insets.getSystemWindowInsetTop();
+                bottom = insets.getSystemWindowInsetBottom();
+            }
+
+            view.setPadding(0, top, 0, bottom);
+            return insets;
+        });
+
+        setContentView(root);
+        root.requestApplyInsets();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
