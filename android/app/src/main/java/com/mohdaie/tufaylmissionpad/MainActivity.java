@@ -30,6 +30,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private TextToSpeech textToSpeech;
     private volatile boolean ttsReady = false;
     private String pendingSpeech = null;
+    private float safeTopCssPx = 0f;
+    private float safeBottomCssPx = 0f;
+    private boolean pageLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,22 +68,27 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 )
         );
 
-        // Android 15/16 enforce edge-to-edge for modern target SDKs.
-        // Keep Mission Pad below the status bar and above the gesture/navigation area.
+        // Android 15/16 draw modern apps edge-to-edge. Measure the actual
+        // system-bar / cutout insets and pass them to the bundled web UI in CSS pixels.
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             int top;
             int bottom;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Insets systemBars = insets.getInsets(WindowInsets.Type.systemBars());
-                top = systemBars.top;
-                bottom = systemBars.bottom;
+                Insets safeInsets = insets.getInsets(
+                        WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout()
+                );
+                top = safeInsets.top;
+                bottom = safeInsets.bottom;
             } else {
                 top = insets.getSystemWindowInsetTop();
                 bottom = insets.getSystemWindowInsetBottom();
             }
 
-            view.setPadding(0, top, 0, bottom);
+            float density = getResources().getDisplayMetrics().density;
+            safeTopCssPx = top / density;
+            safeBottomCssPx = bottom / density;
+            applySafeAreaToWeb();
             return insets;
         });
 
@@ -117,6 +125,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         view.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                pageLoaded = true;
+                applySafeAreaToWeb();
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String scheme = uri.getScheme();
@@ -133,6 +148,20 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 return true;
             }
         });
+    }
+
+    private void applySafeAreaToWeb() {
+        if (!pageLoaded || webView == null) {
+            return;
+        }
+
+        final String script =
+                "(function(){" +
+                "document.documentElement.style.setProperty('--native-safe-top','" + safeTopCssPx + "px');" +
+                "document.documentElement.style.setProperty('--native-safe-bottom','" + safeBottomCssPx + "px');" +
+                "})();";
+
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
     }
 
     @Override
