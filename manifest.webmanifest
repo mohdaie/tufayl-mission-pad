@@ -1,0 +1,21 @@
+{
+  "name": "Tufayl's Mission Pad",
+  "short_name": "Mission Pad",
+  "description": "A dyslexia-friendly handwriting, spelling and creative learning mission pad for children.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FDFBF7",
+  "theme_color": "#3B82F6",
+  "lang": "en",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
