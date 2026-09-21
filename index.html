@@ -1008,83 +1008,48 @@
       speak(itm.snd);
     }
 
-    function checkAndAdvanceTrace(pathLength = 0) {
-      const cvs = document.getElementById('traceCanvas');
-      const ctx = cvs.getContext('2d');
-      const w = cvs.width, h = cvs.height;
-
-      const coreCanvas = document.createElement('canvas');
-      const toleranceCanvas = document.createElement('canvas');
-      coreCanvas.width = toleranceCanvas.width = w;
-      coreCanvas.height = toleranceCanvas.height = h;
-      const coreCtx = coreCanvas.getContext('2d');
-      const tolCtx = toleranceCanvas.getContext('2d');
-
-      const configureGlyph = targetCtx => {
-        targetCtx.font = "900 140px 'Nunito', sans-serif";
-        targetCtx.textAlign = 'center';
-        targetCtx.textBaseline = 'middle';
-        targetCtx.lineJoin = 'round';
-        targetCtx.lineCap = 'round';
-      };
-
-      configureGlyph(coreCtx);
-      coreCtx.fillStyle = '#000';
-      coreCtx.fillText(revTargets[tIdx].char, w / 2, h / 2);
-
-      configureGlyph(tolCtx);
-      tolCtx.fillStyle = '#000';
-      tolCtx.strokeStyle = '#000';
-      tolCtx.lineWidth = 28;
-      tolCtx.strokeText(revTargets[tIdx].char, w / 2, h / 2);
-      tolCtx.fillText(revTargets[tIdx].char, w / 2, h / 2);
-
-      const coreData = coreCtx.getImageData(0, 0, w, h).data;
-      const tolData = tolCtx.getImageData(0, 0, w, h).data;
-      const userData = ctx.getImageData(0, 0, w, h).data;
-
-      let corePx = 0, userPx = 0, overlapTol = 0, overlapCore = 0;
-      for (let i = 3; i < userData.length; i += 4) {
-        const user = userData[i] > 50;
-        const core = coreData[i] > 50;
-        const tolerant = tolData[i] > 50;
-        if (core) corePx++;
-        if (user) userPx++;
-        if (user && tolerant) overlapTol++;
-        if (user && core) overlapCore++;
+    function checkAndAdvanceTrace() {
+      const cvs = document.getElementById('traceCanvas'), ctx = cvs.getContext('2d'), w = cvs.width, h = cvs.height;
+      const osC = document.createElement('canvas'); osC.width = w; osC.height = h;
+      const osCtx = osC.getContext('2d'); 
+      osCtx.font = "140px 'Nunito', monospace"; 
+      osCtx.fontWeight = "900";
+      osCtx.textAlign = "center"; 
+      osCtx.textBaseline = "middle";
+      osCtx.fillText(revTargets[tIdx].char, w/2, h/2);
+      
+      const tData = osCtx.getImageData(0,0,w,h).data, uData = ctx.getImageData(0,0,w,h).data;
+      let tPx = 0, hPx = 0, uPx = 0;
+      
+      for(let i=3; i<tData.length; i+=4) {
+        if (tData[i] > 50) tPx++;
+        if (tData[i] > 50 && uData[i] > 50) hPx++;
+        if (uData[i] > 50) uPx++;
       }
-
-      const precision = userPx ? overlapTol / userPx : 0;
-      const coreCoverage = corePx ? overlapCore / corePx : 0;
-      const usefulCoverage = Math.min(1, coreCoverage / 0.22);
-      let acc = Math.round(precision * 65 + usefulCoverage * 35);
-
-      const minPath = Math.max(90, Math.min(w, h) * 0.45);
-      if (pathLength < minPath) acc = Math.min(acc, 35);
-      acc = Math.max(0, Math.min(100, acc));
-
+      
+      let acc = tPx === 0 ? 0 : Math.round((hPx / tPx) * 100);
+      if (uPx > tPx * 2.5) acc = Math.round(acc * 0.6); 
+      
       const res = document.getElementById('accuracyResult');
-      res.style.display = 'inline-block';
-
+      res.style.display = 'inline-block'; 
+      
       if (acc >= 50) {
         res.innerText = `Accuracy: ${acc}% 😀`;
-        res.className = 'accuracy-badge acc-pass';
-        speak('Great trace!');
-        sessionProg.trace++;
-        consecutiveWrongTraces = 0;
-        updateLifetimeProg('trace');
-        addStars(1);
+        res.className = 'accuracy-badge acc-pass'; 
+        speak("Great trace!");
+        sessionProg.trace++; 
+        consecutiveWrongTraces = 0; // Reset oopsies!
+        updateLifetimeProg('trace'); 
+        addStars(1); // 1 Star exactly.
         checkUnlocks();
         setTimeout(() => { forceNextTrace(); }, 1200);
       } else {
-        res.innerText = pathLength < minPath
-          ? `Keep tracing the whole shape 💪`
-          : `Accuracy: ${acc}% 💪`;
-        res.className = 'accuracy-badge acc-fail';
+        res.innerText = `Accuracy: ${acc}% 💪`;
+        res.className = 'accuracy-badge acc-fail'; 
         consecutiveWrongTraces++;
-        if (consecutiveWrongTraces >= 3) {
-          consecutiveWrongTraces = 0;
-          addStars(-1);
+        if(consecutiveWrongTraces >= 3) {
+            consecutiveWrongTraces = 0;
+            addStars(-1);
         }
       }
     }
@@ -1604,60 +1569,48 @@
     }
 
     function setupCanvas(id) {
-      if(id === 'artCanvas') return;
+      if(id === 'artCanvas') return; // Handled by artApp engine now!
 
       const cvs = document.getElementById(id), ctx = cvs.getContext('2d');
-      const resize = () => {
-        const r = cvs.parentElement.getBoundingClientRect();
-        cvs.width = r.width;
-        cvs.height = r.height;
+      const resize = () => { 
+        const r = cvs.parentElement.getBoundingClientRect(); 
+        cvs.width = r.width; 
+        cvs.height = r.height; 
       };
-      resize();
+      resize(); 
       window.addEventListener('resize', resize);
-
       let drw = false;
-      let lastPoint = null;
-      let pathLength = 0;
-
-      const getP = e => {
-        const r = cvs.getBoundingClientRect();
-        const t = e.touches ? e.touches[0] : e;
-        return { x: t.clientX - r.left, y: t.clientY - r.top };
+      
+      const getP = e => { 
+        const r = cvs.getBoundingClientRect(); 
+        const t = e.touches ? e.touches[0] : e; 
+        return { x: t.clientX - r.left, y: t.clientY - r.top }; 
       };
-
-      const start = e => {
-        drw = true;
-        pathLength = 0;
-        ctx.beginPath();
-        const p = getP(e);
-        lastPoint = p;
-        ctx.moveTo(p.x, p.y);
+      const start = e => { 
+        drw = true; 
+        ctx.beginPath(); 
+        const p = getP(e); 
+        ctx.moveTo(p.x, p.y); 
       };
-
-      const move = e => {
-        if (!drw) return;
-        const p = getP(e);
-        if (lastPoint) pathLength += Math.hypot(p.x - lastPoint.x, p.y - lastPoint.y);
-        lastPoint = p;
-        ctx.lineWidth = 14;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#3B82F6';
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
+      const move = e => { 
+        if (!drw) return; 
+        const p = getP(e); 
+        ctx.lineWidth = 14; 
+        ctx.lineCap = 'round'; 
+        ctx.strokeStyle = '#3B82F6'; 
+        ctx.lineTo(p.x, p.y); 
+        ctx.stroke(); 
       };
-
-      const end = () => {
-        if (drw) checkAndAdvanceTrace(pathLength);
-        drw = false;
-        lastPoint = null;
+      const end = () => { 
+        if(drw) checkAndAdvanceTrace(); 
+        drw = false; 
       };
-
-      cvs.addEventListener('mousedown', start);
-      cvs.addEventListener('mousemove', move);
+      
+      cvs.addEventListener('mousedown', start); 
+      cvs.addEventListener('mousemove', move); 
       window.addEventListener('mouseup', end);
-      cvs.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false});
-      cvs.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false});
+      cvs.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false}); 
+      cvs.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false}); 
       window.addEventListener('touchend', end);
     }
 
