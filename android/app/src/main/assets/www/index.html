@@ -11,6 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="Mission Pad" />
 <style>
     :root {
+      --native-safe-top: 0px;
+      --native-safe-bottom: 0px;
       --bg-cream: #FDFBF7; 
       --bg-sky-light: #E0F2FE;
       --bg-sky-dark: #BAE6FD;
@@ -38,7 +40,9 @@
         display: flex; 
         flex-direction: column; 
         height: 100vh; 
-        height: 100dvh; 
+        height: 100dvh;
+        padding-top: var(--native-safe-top);
+        padding-bottom: var(--native-safe-bottom);
         overflow: hidden; 
         background-image: linear-gradient(to bottom, #F8FAFC 0%, var(--bg-cream) 100%);
     }
@@ -158,7 +162,7 @@
     .banner-text-underline { width: 80%; height: 6px; background: #FBBF24; border-radius: 4px; margin-top: 4px; transform: rotate(-2deg); }
     .banner-illustration { position: absolute; right: 0; bottom: -10px; font-size: 6rem; opacity: 1; z-index: 1;}
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 10px 25px 10px; box-shadow: 0 -4px 25px rgba(0,0,0,0.08); z-index: 20; border-top: 1px solid rgba(226, 232, 240, 0.6); }
+    .bottom-nav { position: fixed; bottom: var(--native-safe-bottom); left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 10px 25px 10px; box-shadow: 0 -4px 25px rgba(0,0,0,0.08); z-index: 20; border-top: 1px solid rgba(226, 232, 240, 0.6); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94A3B8; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: none; background: none; }
     .nav-icon { font-size: 1.6rem; padding: 8px 20px; border-radius: 20px; transition: 0.2s; }
     .nav-item.active { color: var(--btn-trace); }
@@ -258,7 +262,7 @@
       <div class="logo-icon">🚀</div>
       <div class="logo-text">
         <span class="logo-text-main">Tufayl's Mission Pad</span>
-        <span class="logo-text-sub">Small Steps Big Progress • v2.1.1 Android</span>
+        <span class="logo-text-sub">Small Steps Big Progress • v2.1.2 Android</span>
       </div>
     </div>
     <div class="status-bar">
