@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tufayl-mission-pad-v2.0.0';
+const CACHE_NAME = 'tufayl-mission-pad-v2.0.1';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
