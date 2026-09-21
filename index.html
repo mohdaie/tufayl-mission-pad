@@ -1633,7 +1633,7 @@
       startTimer(appSettings.timerMins);
 
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => reg.update()).catch(err => {
           console.warn('Service worker registration failed:', err);
         });
       }
