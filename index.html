@@ -1058,7 +1058,7 @@
       const precision = userPx ? overlapTol / userPx : 0;
       const coreCoverage = corePx ? overlapCore / corePx : 0;
       const usefulCoverage = Math.min(1, coreCoverage / 0.22);
-      let acc = Math.round((precision * 65 + usefulCoverage * 35) * 100);
+      let acc = Math.round(precision * 65 + usefulCoverage * 35);
 
       const minPath = Math.max(90, Math.min(w, h) * 0.45);
       if (pathLength < minPath) acc = Math.min(acc, 35);
