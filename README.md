@@ -1,45 +1,91 @@
-# 🚀 Tufayl's Mission Pad
+# 🚀 Tufayl's Mission Pad v2.0
 
-A gamified, interactive educational web application designed to help children practice handwriting and spelling in a fun, focused environment. Built entirely as a single-page application with no external dependencies.
+A dyslexia-friendly, gamified learning web app for handwriting, spelling, focus and creative reward time. The project is intentionally lightweight: one main HTML app, vanilla JavaScript, browser storage and a small PWA layer.
 
-## ✨ Key Features
+## ✨ What v2.0 includes
 
-*   **✍️ Trace Mission (Handwriting)**: Interactive canvas for tracing uppercase letters, lowercase letters, and numbers. Features traditional Sky, Plane, and Grass guide lines. Includes instant accuracy calculation (>= 50% to pass) and immediate visual feedback.
-*   **🔤 Spell Mission (Phonics)**: Auditory spelling challenges using the Web Speech API. Includes a visual "Show Word" hint toggle for extra learning support.
-*   **🎨 Art Studio (Reward)**: A free-draw digital sketchpad that only unlocks once the daily Trace and Spell targets are met.
-*   **⏱️ Focus Timer**: Built-in, adjustable session timer to help maintain focus and manage attention (ADHD-friendly).
-*   **⭐ Gamification & Tracking**: Tracks daily streaks, lifetime stars, and mission targets across multiple user profiles using local browser storage.
-*   **📱 Native App Feel**: Designed with mobile-first CSS (disabling text-selection and scaling) to feel exactly like a native iPad/tablet app when added to the home screen.
+### ✍️ Trace Mission
+- Uppercase, lowercase and numbers.
+- Sky / Plane / Grass handwriting guide lines.
+- Improved trace scoring using a tolerance mask, stroke precision, target coverage and minimum path length.
+- 50%+ score advances to the next target.
+- Three unsuccessful attempts can deduct one star without allowing the total to fall below zero.
 
-## 🛠️ Technologies Used
+### 🔤 Spell Mission
+A child-safe curriculum now replaces the old unrestricted word pool:
 
-*   **HTML5 / CSS3**: Pure CSS styling, flexbox/grid layouts, and custom code-generated UI elements.
-*   **Vanilla JavaScript**: Core application logic.
-*   **HTML5 Canvas API**: Powers the multi-stroke drawing engine for the Trace and Art Studio modules.
-*   **Web Speech API**: Provides native Text-to-Speech (TTS) for the spelling module.
-*   **Local Storage**: Manages multi-user profiles, progress, and settings persistently on the device.
+- **🌱 Foundation** — short phonics and early-reader words.
+- **🌿 Growing** — common everyday words.
+- **🚀 Explorer** — longer, age-appropriate challenge words.
 
-## 🚀 Live Demo
+The active spelling level can be changed in Settings. Text-to-speech, replay, Show Word, reset and skip controls remain available.
 
-You can access the live web application here:
-👉 **[Insert your GitHub Pages link here, e.g., https://mohdaie.github.io/tufayl-mission-pad/]**
+### 🎨 Art Studio Reward
+Art Studio unlocks when the daily Trace and Spell targets are complete. Once earned, it stays unlocked for the rest of that day.
 
-## 📱 How to Install on Tablet/iPad
+Tools include:
+- Pen, pencil, brush, eraser and ruler.
+- 48 colours.
+- Stickers.
+- Undo / redo.
+- Zoom controls.
+- Saved-art reward tracking.
 
-For the best distraction-free experience, install this as a native-feeling app on your device:
-1. Open the live link in **Safari** (iPad/iPhone) or **Chrome** (Android).
-2. Tap the **Share** button (the square with an arrow pointing up in Safari) or the **Menu** button (three dots in Chrome).
-3. Scroll down and select **"Add to Home Screen"**.
-4. Tap **Add**. 
+### ⭐ Daily progress and streaks
+- Daily Trace / Spell / Art progress persists across refreshes and app restarts.
+- Completion history is stored per learner profile.
+- Streaks are calculated from real consecutive calendar days.
+- The weekly tracker represents the actual Monday–Sunday calendar week.
+- Existing streak data is migrated automatically where possible.
+- Multiple learner profiles remain supported.
 
-The app will now appear on your home screen with its own icon and open in full-screen mode without the browser search bar!
+### ⏱️ Focus support
+- Adjustable focus timer.
+- Large touch targets and low-distraction navigation.
+- Dyslexia-friendly layout and clear visual separation between missions.
 
-## 💻 Local Development
+## 📱 Progressive Web App
 
-Since this project is fully contained in a single file with no external dependencies, local development is incredibly simple:
-1. Clone the repository or download `index.html`.
-2. Open `index.html` directly in any modern web browser.
-3. Edit the code in your favorite text editor.
+v2.0 adds:
+- `manifest.webmanifest`
+- `sw.js` service worker
+- `icon.svg`
+- Standalone app metadata
+- Offline caching for the core app
+- Network-first navigation so new releases replace cached versions when online
+
+The app can be added to the Home Screen on supported mobile/tablet browsers.
+
+## 🌐 GitHub Pages
+
+Repository:
+
+**https://github.com/mohdaie/tufayl-mission-pad**
+
+Expected GitHub Pages address when Pages is enabled for `main` / repository root:
+
+**https://mohdaie.github.io/tufayl-mission-pad/**
+
+If Pages is not enabled yet, open **Repository Settings → Pages**, publish from the `main` branch and repository root.
+
+## 🛠️ Stack
+
+- HTML5 / CSS3
+- Vanilla JavaScript
+- HTML5 Canvas API
+- Web Speech API
+- Local Storage
+- Service Worker + Web App Manifest
+- Google Fonts with browser fallback when offline
+
+No framework, package manager, build process or backend is required.
+
+## 💻 Local development
+
+1. Clone or download the repository.
+2. Open `index.html` for normal UI development.
+3. PWA/service-worker functionality requires HTTP/HTTPS, so use a local web server when testing install/offline behaviour.
 
 ---
-*Created by Zuhairi*
+
+Created by Zuhairi.
