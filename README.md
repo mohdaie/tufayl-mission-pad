@@ -89,3 +89,18 @@ No framework, package manager, build process or backend is required.
 ---
 
 Created by Zuhairi.
+
+
+## 🤖 Android v2.1
+
+The repository now also contains a Google Play-ready Android project under `/android`.
+
+- Package: `com.mohdaie.tufaylmissionpad`
+- Version: `2.1.0` (`versionCode 20100`)
+- Minimum SDK: API 26
+- Target / compile SDK: API 36
+- Mission Pad is bundled locally in the Android app.
+- Native Android Text-to-Speech and back navigation are integrated.
+- No Internet, location, camera, microphone, ads or analytics permissions/SDKs are included in the current Android build.
+
+See `android/README.md` and `android/PLAY_RELEASE_CHECKLIST.md` for build and Play release instructions.
